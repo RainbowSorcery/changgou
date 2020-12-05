@@ -18,12 +18,12 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.SearchHitSupport;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.SearchPage;
+import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
@@ -69,8 +69,63 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
             // 添加至聚合搜索对象
             nativeSearchQueryBuilder.addAggregation(brandGroupBuilder);
 
-            //
+            // 精确查找 根据品牌名称精确查询
+            if (!StringUtils.isEmpty(conditionMap.get("brandName"))) {
+                boolQueryBuilder.must(QueryBuilders.matchQuery("brandName", conditionMap.get("brandName")));
+            }
 
+            if (!StringUtils.isEmpty(conditionMap.get("categoryName"))) {
+                boolQueryBuilder.must(QueryBuilders.matchQuery("categoryName", conditionMap.get("categoryName")));
+            }
+
+            List<String> specNameList = new ArrayList<>();
+
+            // 获取所有以specMap开头的key
+            conditionMap.keySet().forEach((key) -> {
+                // 判断开头是否为specMap.的key
+                if (key.startsWith("specMap.")) {
+                    specNameList.add(key);
+                }
+            });
+
+            // 拼接查询
+            specNameList.forEach((specName) -> {
+                if (!StringUtils.isEmpty(conditionMap.get(specName))) {
+                    boolQueryBuilder.must(QueryBuilders.matchQuery(specName, conditionMap.get(specName)));
+                }
+            });
+
+            if (!StringUtils.isEmpty(conditionMap.get("priceRange"))) {
+                String priceRange = conditionMap.get("priceRange");
+
+                String[] split = priceRange.split("-");
+
+                String price1 = split[0];
+                String price2 = split[1];
+
+                boolQueryBuilder.filter(QueryBuilders.rangeQuery("price").gte(price1).lte(price2));
+
+
+            }
+
+            // 排序查询
+            if (!StringUtils.isEmpty(conditionMap.get("sortField")) && !StringUtils.isEmpty(conditionMap.get("sortRule"))) {
+                String sortField = conditionMap.get("sortField");
+                String sortRule = conditionMap.get("sortRule");
+
+                if ("DESC".equals(sortRule)) {
+                    nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort(sortField).order(SortOrder.DESC));
+                } else {
+                    nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort(sortField).order(SortOrder.ASC));
+                }
+            }
+
+            // 高亮查询
+            HighlightBuilder highlightBuilder = new HighlightBuilder();
+            highlightBuilder.preTags("<font color='red'>");
+            highlightBuilder.postTags("</font>");
+            highlightBuilder.field("name");
+            nativeSearchQueryBuilder.withHighlightBuilder(highlightBuilder);
 
 
             String categoryBrand = "categoryGroup";
@@ -144,6 +199,18 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
 
             // 将SearchHits转为SearchPage
             SearchPage<SkuInfo>skuInfoSearchPage = SearchHitSupport.searchPageFor(searchData, nativeSearchQuery.getPageable());
+
+
+            // 高亮字段
+            for (SearchHit<SkuInfo> skuInfoSearchHit : skuInfoSearchPage) {
+                // 获取高亮列表
+                Map<String, List<String>> highlightFields = skuInfoSearchHit.getHighlightFields();
+
+                SkuInfo content = skuInfoSearchHit.getContent();
+                // 将高亮内容覆盖
+                content.setName(highlightFields.get("name").get(0));
+            }
+
 
             resultMap.put("rows", skuInfoSearchPage.getContent());
             resultMap.put("total", skuInfoSearchPage.getTotalElements());
