@@ -1,0 +1,53 @@
+server:
+  port: 9011
+
+spring:
+  application:
+    name: goods
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.223.130:3306/changgou_goods
+    username: root
+    password: 52701314
+  rabbitmq:
+    host: 123.57.143.96
+    username: guest
+    password: guest
+  data:
+    elasticsearch:
+      client:
+        reactive:
+          socket-timeout: 50000
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:6868/eureka/
+  instance:
+    # 使用ip地址来进行服务注册 使用eureka进入服务时 地址栏显示的是ip地址
+    prefer-ip-address: true
+
+
+
+feign:
+  hystrix:
+    enabled: true
+
+#hystrix 配置
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          #如果enabled设置为false，则请求超时交给ribbon控制
+          enabled: true
+        isolation:
+          strategy: SEMAPHORE
+
+mybatis:
+  configuration:
+    # 控制台输出sql
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+

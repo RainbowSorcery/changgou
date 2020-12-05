@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: system
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://123.57.143.96:3306/changgou_goods
+    username: root
+    password: 11037
+
+server:
+  port: 9006
+
+
+
+#hystrix ����
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          #���enabled����Ϊfalse��������ʱ����ribbon����
+          enabled: true
+        isolation:
+          strategy: SEMAPHORE
+
+mybatis:
+  configuration:
+    # ����̨���sql
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:6868/eureka/
+  instance:
+    prefer-ip-address: true

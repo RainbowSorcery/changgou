@@ -1,0 +1,45 @@
+server:
+  port: 9009
+spring:
+  application:
+    name: search-service
+  rabbitmq:
+    host: 123.57.143.96
+    username: guest
+    password: guest
+  redis:
+    host: 123.57.143.96
+    port: 6379
+  main:
+    allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
+
+  elasticsearch:
+    rest:
+      uris: 192.168.223.130:9200
+      read-timeout: 3000000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:6868/eureka/
+  instance:
+    # 使用ip地址来进行服务注册 使用eureka进入服务时 地址栏显示的是ip地址
+    prefer-ip-address: true
+
+
+
+feign:
+  hystrix:
+    enabled: true
+
+#hystrix 配置
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          #如果enabled设置为false，则请求超时交给ribbon控制
+          enabled: true
+        isolation:
+          strategy: SEMAPHORE
+
