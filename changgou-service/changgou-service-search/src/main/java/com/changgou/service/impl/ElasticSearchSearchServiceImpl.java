@@ -1,21 +1,16 @@
 package com.changgou.service.impl;
 import com.alibaba.fastjson.JSON;
-import com.changgou.goods.pojo.Spec;
 import com.google.common.collect.Maps;
 
-import com.changgou.dao.SearchMapper;
 import com.changgou.pojo.SkuInfo;
 import com.changgou.service.ElasticSearchSearchService;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -24,7 +19,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.*;
-import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
@@ -35,6 +29,15 @@ import java.util.*;
 public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchService {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+
+    private final NativeSearchQueryBuilder nativeSearchQueryBuilder =
+            new NativeSearchQueryBuilder();
+
+    private final BoolQueryBuilder boolQueryBuilder =
+            new BoolQueryBuilder();
+
+    private boolean flag = true;
+
 
     @Override
     public Map<String, Object> search(Map<String, String> conditionMap) {
@@ -196,7 +199,6 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
                 }
             }));
 
-
             // 将SearchHits转为SearchPage
             SearchPage<SkuInfo>skuInfoSearchPage = SearchHitSupport.searchPageFor(searchData, nativeSearchQuery.getPageable());
 
@@ -222,6 +224,107 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
 
         return resultMap;
     }
-    
-    
+
+
+    /**
+     * 分页查询
+     * @param searchData 搜索数据
+     * @return 分页对象
+     */
+    public SearchPage<SkuInfo> findPage(Map<String, Object> searchConditionMap, SearchHits<SkuInfo> searchData) {
+
+        int currentPage = 0;
+        if (searchConditionMap.get("currentPage") != null) {
+            currentPage = Integer.parseInt((String) searchConditionMap.get("currentPage"));
+        }
+
+        int pageSize = 10;
+        if (searchConditionMap.get("pageSize") != null) {
+            pageSize = Integer.parseInt((String) searchConditionMap.get("pageSize"));
+        }
+
+
+        nativeSearchQueryBuilder.withPageable(PageRequest.of(currentPage, pageSize));
+
+        return SearchHitSupport.searchPageFor(searchData, nativeSearchQueryBuilder.build().getPageable());
+    }
+
+
+    private void keyWordSearch(Map<String, Object> searchConditionMap) {
+        String keywords = null;
+        if (!StringUtils.isEmpty((String) searchConditionMap.get("keywords"))) {
+            keywords = (String) searchConditionMap.get("keywords");
+        }
+
+        assert keywords != null;
+        boolQueryBuilder.must(QueryBuilders.matchQuery("name", keywords));
+
+        nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+    }
+
+    private void specSearch() {
+
+    }
+
+    private List<String> polymerizationSearch(SearchHits<SkuInfo> searchHits, String groupName) {
+
+        Aggregations aggregations = searchHits.getAggregations();
+
+
+        assert aggregations != null;
+        Terms brandTerms = aggregations.get(groupName);
+
+        List<String> brandList = new ArrayList<>();
+
+        brandTerms.getBuckets().forEach((bucket -> {
+            brandList.add(bucket.getKeyAsString());
+        }));
+
+        return brandList;
+    }
+
+    private void setAggregation(String groupName, String fieldName) {
+
+        TermsAggregationBuilder brandAggregation = AggregationBuilders.terms(groupName).field(fieldName);
+        nativeSearchQueryBuilder.addAggregation(brandAggregation);
+    }
+
+
+
+    public Map<String, Object> searchTest(Map<String, Object> searchConditionMap) {
+        Map<String, Object> resultMap = new HashMap<>();
+
+        keyWordSearch(searchConditionMap);
+
+        String brandGroupName = "brandGroup";
+        String categoryGroupName = "categoryGroup";
+
+        // 因为每次调用都会向 nativeSearchQueryBuilder 中添加Aggregation 所有设置一个标识只调用一次方法
+        if (flag) {
+            setAggregation(brandGroupName, "brandName");
+            setAggregation(categoryGroupName, "categoryName");
+
+
+            flag = false;
+        }
+
+        SearchHits<SkuInfo> searchHits =
+                elasticsearchRestTemplate.search(nativeSearchQueryBuilder.build(), SkuInfo.class);
+
+        List<String> brandList = polymerizationSearch(searchHits, brandGroupName);
+        List<String> categoryList = polymerizationSearch(searchHits, categoryGroupName);
+
+
+        SearchPage<SkuInfo> searchPageData = findPage(searchConditionMap, searchHits);
+
+
+        resultMap.put("rows", searchPageData.getContent());
+        resultMap.put("total", searchPageData.getTotalElements());
+        resultMap.put("totalPage", searchPageData.getTotalPages());
+        resultMap.put("brandList", brandList);
+        resultMap.put("categoryList", categoryList);
+
+        return resultMap;
+    }
+
 }
