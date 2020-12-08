@@ -30,27 +30,21 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-    private final NativeSearchQueryBuilder nativeSearchQueryBuilder =
-            new NativeSearchQueryBuilder();
-
-    private final BoolQueryBuilder boolQueryBuilder =
-            new BoolQueryBuilder();
-
-    private boolean flag = true;
-
 
     @Override
     public Map<String, Object> search(Map<String, String> conditionMap) {
         Map<String,Object> stringMap=Maps.newHashMap();
 
         Map<String, Object> resultMap = new HashMap<>();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         // 判断map中是否又字段
         if (!StringUtils.isEmpty(conditionMap.get("keywords"))) {
-
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            // 组合查询调教
             boolQueryBuilder.must(QueryBuilders.matchQuery("name", conditionMap.get("keywords")).operator(Operator.AND));
+
+        }
+
+            // 组合查询调教
 
             NativeSearchQueryBuilder nativeSearchQueryBuilder =
                     new NativeSearchQueryBuilder();
@@ -73,8 +67,8 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
             nativeSearchQueryBuilder.addAggregation(brandGroupBuilder);
 
             // 精确查找 根据品牌名称精确查询
-            if (!StringUtils.isEmpty(conditionMap.get("brandName"))) {
-                boolQueryBuilder.must(QueryBuilders.matchQuery("brandName", conditionMap.get("brandName")));
+            if (!StringUtils.isEmpty(conditionMap.get("brand"))) {
+                boolQueryBuilder.must(QueryBuilders.matchQuery("brandName", conditionMap.get("brand")));
             }
 
             if (!StringUtils.isEmpty(conditionMap.get("categoryName"))) {
@@ -98,8 +92,8 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
                 }
             });
 
-            if (!StringUtils.isEmpty(conditionMap.get("priceRange"))) {
-                String priceRange = conditionMap.get("priceRange");
+            if (!StringUtils.isEmpty(conditionMap.get("price"))) {
+                String priceRange = conditionMap.get("price");
 
                 String[] split = priceRange.split("-");
 
@@ -137,12 +131,11 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
             String specGroup = "specGroup";
             nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms(specGroup).field("spec.keyword"));
 
-            int currentPage = 0;
-
-            int pageSize = 5;
+            int pageNum = 0;
+            int pageSize = 20;
             // 判断字段中是否有currentPage和pageSize如果有则使用map中的值 如果没有或不为数字则使用默认值 也就是0 和 5
-            if (StringUtils.isNumeric(conditionMap.get("currentPage"))) {
-                currentPage = Integer.parseInt(conditionMap.get("currentPage"));
+            if (StringUtils.isNumeric(conditionMap.get("pageNum"))) {
+                pageNum = Integer.parseInt(conditionMap.get("pageNum"));
             }
 
             if (StringUtils.isNumeric(conditionMap.get("pageSize"))) {
@@ -152,7 +145,7 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
             // withPageable 为分页查询
             NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder
                     .withQuery(boolQueryBuilder)
-                    .withPageable(PageRequest.of(currentPage, pageSize)).build();
+                    .withPageable(PageRequest.of(pageNum, pageSize)).build();
 
             SearchHits<SkuInfo> searchData = elasticsearchRestTemplate.search(nativeSearchQuery, SkuInfo.class);
 
@@ -205,34 +198,42 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
 
             // 高亮字段
             for (SearchHit<SkuInfo> skuInfoSearchHit : skuInfoSearchPage) {
+
                 // 获取高亮列表
                 Map<String, List<String>> highlightFields = skuInfoSearchHit.getHighlightFields();
 
                 SkuInfo content = skuInfoSearchHit.getContent();
                 // 将高亮内容覆盖
-                content.setName(highlightFields.get("name").get(0));
+                if (highlightFields != null && highlightFields.size() > 0) {
+                    content.setName(highlightFields.get("name").get(0));
+                }
             }
 
+            SearchHits<SkuInfo> searchHits = skuInfoSearchPage.getSearchHits();
 
-            resultMap.put("rows", skuInfoSearchPage.getContent());
+            List<SkuInfo> rows = new LinkedList<>();
+        if (searchHits != null) {
+            searchHits.forEach((skuInfoSearchHit -> {
+                rows.add(skuInfoSearchHit.getContent());
+            }));
+        }
+
+
+        resultMap.put("rows", rows);
             resultMap.put("total", skuInfoSearchPage.getTotalElements());
             resultMap.put("totalPage", skuInfoSearchPage.getTotalPages());
             resultMap.put("brandList", brandList);
             resultMap.put("categoryList", categoryList);
-            resultMap.put("specMap", specMap);
-        }
+            resultMap.put("specList", specMap);
+            resultMap.put("pageNum", pageNum);
+            resultMap.put("pageSize", pageSize);
 
         return resultMap;
     }
 
 
-    /**
-     * 分页查询
-     * @param searchData 搜索数据
-     * @return 分页对象
-     */
-    public SearchPage<SkuInfo> findPage(Map<String, Object> searchConditionMap, SearchHits<SkuInfo> searchData) {
-
+    private NativeSearchQueryBuilder setSarchCondition(Map<String, Object> searchConditionMap,
+                                                       NativeSearchQueryBuilder nativeSearchQueryBuilder) {
         int currentPage = 0;
         if (searchConditionMap.get("currentPage") != null) {
             currentPage = Integer.parseInt((String) searchConditionMap.get("currentPage"));
@@ -244,26 +245,58 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
         }
 
 
-        nativeSearchQueryBuilder.withPageable(PageRequest.of(currentPage, pageSize));
+        return nativeSearchQueryBuilder.withPageable(PageRequest.of(currentPage, pageSize));
+    }
+
+    /**
+     * 分页查询
+     * @param searchData 搜索数据
+     * @param nativeSearchQueryBuilder
+     * @return 分页对象
+     */
+    public SearchPage<SkuInfo> findPage(SearchHits<SkuInfo> searchData,
+                                        NativeSearchQueryBuilder nativeSearchQueryBuilder) {
+
 
         return SearchHitSupport.searchPageFor(searchData, nativeSearchQueryBuilder.build().getPageable());
     }
 
 
-    private void keyWordSearch(Map<String, Object> searchConditionMap) {
+    private void keyWordSearch(Map<String, Object> searchConditionMap, BoolQueryBuilder boolQueryBuilder, NativeSearchQueryBuilder nativeSearchQueryBuilder) {
         String keywords = null;
         if (!StringUtils.isEmpty((String) searchConditionMap.get("keywords"))) {
             keywords = (String) searchConditionMap.get("keywords");
         }
 
         assert keywords != null;
-        boolQueryBuilder.must(QueryBuilders.matchQuery("name", keywords));
+        if (!StringUtils.isEmpty(keywords)) {
+            boolQueryBuilder.must(QueryBuilders.matchQuery("name", keywords));
+        }
 
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
     }
 
-    private void specSearch() {
+    private Map<String, Set<String>> specSearch(SearchHits<SkuInfo> searchHits) {
+        Map<String, Set<String>> specMap = new HashMap<>();
 
+
+        searchHits.getSearchHits().forEach((skuInfoSearchHit -> {
+            Map<String, String> specJsonMap = JSON.parseObject(skuInfoSearchHit.getContent().getSpec(), Map.class);
+            Set<String> specSet = null;
+
+            for (String key : specJsonMap.keySet()) {
+                if (specMap.containsKey(key)) {
+                    specSet = specMap.get(key);
+                } else {
+                    specSet = new HashSet<>();
+                }
+                specSet.add(specJsonMap.get(key));
+                specMap.put(key, specSet);
+            }
+
+        }));
+
+        return specMap;
     }
 
     private List<String> polymerizationSearch(SearchHits<SkuInfo> searchHits, String groupName) {
@@ -283,39 +316,60 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
         return brandList;
     }
 
-    private void setAggregation(String groupName, String fieldName) {
+    private void setAggregation(String groupName, String fieldName, NativeSearchQueryBuilder nativeSearchQueryBuilder) {
 
         TermsAggregationBuilder brandAggregation = AggregationBuilders.terms(groupName).field(fieldName);
         nativeSearchQueryBuilder.addAggregation(brandAggregation);
     }
 
+    public void mustSearch(String filed, String value, BoolQueryBuilder boolQueryBuilder) {
+        if (value != null) {
+            boolQueryBuilder.must(QueryBuilders.matchQuery(filed, value));
+        }
 
+    }
 
     public Map<String, Object> searchTest(Map<String, Object> searchConditionMap) {
+
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
+
         Map<String, Object> resultMap = new HashMap<>();
 
-        keyWordSearch(searchConditionMap);
+        keyWordSearch(searchConditionMap, boolQueryBuilder, nativeSearchQueryBuilder);
 
         String brandGroupName = "brandGroup";
         String categoryGroupName = "categoryGroup";
 
         // 因为每次调用都会向 nativeSearchQueryBuilder 中添加Aggregation 所有设置一个标识只调用一次方法
-        if (flag) {
-            setAggregation(brandGroupName, "brandName");
-            setAggregation(categoryGroupName, "categoryName");
+
+        setAggregation(brandGroupName, "brandName", nativeSearchQueryBuilder);
+        setAggregation(categoryGroupName, "categoryName", nativeSearchQueryBuilder);
 
 
-            flag = false;
-        }
+
+        setSarchCondition(searchConditionMap, nativeSearchQueryBuilder);
+        NativeSearchQuery nativeSearchQuery = nativeSearchQueryBuilder.build();
+
+
+
+        mustSearch("brandName", (String) searchConditionMap.get("brandName"), boolQueryBuilder);
+        mustSearch("categoryName", (String) searchConditionMap.get("categoryName"), boolQueryBuilder);
+
+        // todo 拼接查询
+//        mustSpecSearch(searchConditionMap);
 
         SearchHits<SkuInfo> searchHits =
-                elasticsearchRestTemplate.search(nativeSearchQueryBuilder.build(), SkuInfo.class);
+                elasticsearchRestTemplate.search(nativeSearchQuery, SkuInfo.class);
 
         List<String> brandList = polymerizationSearch(searchHits, brandGroupName);
         List<String> categoryList = polymerizationSearch(searchHits, categoryGroupName);
 
+        SearchPage<SkuInfo> searchPageData = findPage(searchHits, nativeSearchQueryBuilder);
 
-        SearchPage<SkuInfo> searchPageData = findPage(searchConditionMap, searchHits);
+
+        Map<String, Set<String>> specMap =  specSearch(searchHits);
+
 
 
         resultMap.put("rows", searchPageData.getContent());
@@ -323,6 +377,7 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
         resultMap.put("totalPage", searchPageData.getTotalPages());
         resultMap.put("brandList", brandList);
         resultMap.put("categoryList", categoryList);
+        resultMap.put("specMap", specMap);
 
         return resultMap;
     }
