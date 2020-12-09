@@ -51,3 +51,4 @@ mybatis:
     # 控制台输出sql
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+pagePath: D:\JavaProject\changgou\changgou-service\changgou-service-goods\src\main\resources\templates\items

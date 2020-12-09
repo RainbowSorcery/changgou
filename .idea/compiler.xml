@@ -17,6 +17,7 @@
         <module name="changgou-system" />
         <module name="changgou-service-goods" />
         <module name="changgou-service-goods-api" />
+        <module name="changgou-service-page" />
         <module name="changgou-gateway-systtem" />
         <module name="changgou-common-db" />
         <module name="changgou-web" />
@@ -48,6 +49,7 @@
       <module name="changgou-service-api" options="-parameters" />
       <module name="changgou-service-goods" options="-parameters" />
       <module name="changgou-service-goods-api" options="-parameters" />
+      <module name="changgou-service-page" options="-parameters" />
       <module name="changgou-service-search" options="-parameters" />
       <module name="changgou-service-search-api" options="-parameters" />
       <module name="changgou-service-system-api" options="-parameters" />
