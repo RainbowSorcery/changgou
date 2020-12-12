@@ -28,6 +28,5 @@ public class SkuController {
     @GetMapping("/findBySpuId/{spuId}")
     public List<Sku> findBySpuId(@PathVariable String spuId) {
         return skuService.findBySpuId(spuId);
-
     }
 }

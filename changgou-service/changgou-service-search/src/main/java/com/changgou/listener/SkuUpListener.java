@@ -25,6 +25,7 @@ public class SkuUpListener {
 
     @RabbitHandler
     public void searchAddQueueHandle(String spuId) {
+        System.out.println("spuId = " + spuId);
         // 获取sku列表
         List<Sku> skuList = skuFeign.findSpuIdBySku(spuId);
 
@@ -32,10 +33,12 @@ public class SkuUpListener {
     }
 
     public static void skuJsonToSkuInfoList(List<Sku> skuList, SearchMapper searchMapper) {
+        // 将skuList转为json
         String skuListJson = JSON.toJSONString(skuList);
 
         List<SkuInfo> skuInfos = JSON.parseArray(skuListJson, SkuInfo.class);
 
+        // 将json转为skuInfo对象
         if (skuInfos != null && skuInfos.size() > 0) {
             skuInfos.forEach((skuInfo -> {
                 Map map = JSON.parseObject(skuInfo.getSpec(), Map.class);
@@ -44,6 +47,7 @@ public class SkuUpListener {
         }
 
         assert skuInfos != null;
+        // 保存至elasticsearch中
         searchMapper.saveAll(skuInfos);
     }
 }

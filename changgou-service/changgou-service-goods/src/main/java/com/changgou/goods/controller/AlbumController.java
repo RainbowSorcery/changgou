@@ -13,31 +13,31 @@ import java.util.Map;
 @RestController
 @CrossOrigin
 @RequestMapping("/album")
+/**
+ * @author: rainbow
+ */
 public class AlbumController {
 
 
     @Autowired
     private AlbumService albumService;
 
-    /**
-     * 查询全部数据
-     * @return
-     */
+
     @GetMapping
-    public Result findAll(){
+    public Result<String> findAll(){
         List<Album> albumList = albumService.findAll();
-        return new Result(true, StatusCode.OK,"查询成功",albumList) ;
+        return new Result<>(true, StatusCode.OK,"查询成功",albumList) ;
     }
 
     /***
      * 根据ID查询数据
-     * @param id
-     * @return
+     * @param id alubumId
+     * @return result同样结果集
      */
     @GetMapping("/{id}")
-    public Result findById(@PathVariable Long id){
+    public Result<String> findById(@PathVariable Long id){
         Album album = albumService.findById(id);
-        return new Result(true,StatusCode.OK,"查询成功",album);
+        return new Result<>(true,StatusCode.OK,"查询成功",album);
     }
 
 

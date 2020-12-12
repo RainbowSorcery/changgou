@@ -25,8 +25,8 @@ public class ElasticSearchMannageServiceImpl implements ElasticMannagerService {
     @Autowired
     private SearchMapper searchMapper;
 
-    @Autowired
-    private SkuFeign skuFeign;
+        @Autowired
+        private SkuFeign skuFeign;
 
     @Autowired
     private ElasticsearchOperations elasticsearchOperations;
@@ -41,8 +41,11 @@ public class ElasticSearchMannageServiceImpl implements ElasticMannagerService {
 
     @Override
     public void createIndexAndMapping() {
+        // 创建索引
         indexOperations.create();
+        // 创建映射对象
         Document skuInfoDocument = indexOperations.createMapping(SkuInfo.class);
+        // 设置映射
         indexOperations.putMapping(skuInfoDocument);
     }
 
@@ -52,8 +55,4 @@ public class ElasticSearchMannageServiceImpl implements ElasticMannagerService {
 
         SkuUpListener.skuJsonToSkuInfoList(skuListData, searchMapper);
     }
-
-
-
-
 }

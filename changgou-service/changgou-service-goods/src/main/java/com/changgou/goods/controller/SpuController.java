@@ -41,7 +41,7 @@ public class SpuController {
         return new Result<>(true, StatusCode.OK, "审核修改成功");
     }
 
-    @PostMapping("/upGo  ods/{spuId}")
+    @PostMapping("/upGoods/{spuId}")
     public Result<String> upGoods(@PathVariable String spuId) {
         spuService.upGoods(spuId);
 

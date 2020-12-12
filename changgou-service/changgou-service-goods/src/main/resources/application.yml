@@ -1,5 +1,5 @@
 server:
-  port: 9011
+  port: 9001
 
 spring:
   application:
@@ -11,7 +11,7 @@ spring:
     username: root
     password: 52701314
   rabbitmq:
-    host: 123.57.143.96
+    host: 192.168.223.130
     username: guest
     password: guest
   data:
@@ -50,5 +50,3 @@ mybatis:
   configuration:
     # 控制台输出sql
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
-pagePath: D:\JavaProject\changgou\changgou-service\changgou-service-goods\src\main\resources\templates\items

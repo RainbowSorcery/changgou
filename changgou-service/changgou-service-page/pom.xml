@@ -25,6 +25,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.changgou</groupId>
             <artifactId>changgou-service-goods-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>

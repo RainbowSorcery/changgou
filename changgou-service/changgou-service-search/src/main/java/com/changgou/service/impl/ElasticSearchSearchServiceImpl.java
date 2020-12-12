@@ -92,14 +92,18 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
                 }
             });
 
+            // 价格范围查询
             if (!StringUtils.isEmpty(conditionMap.get("price"))) {
                 String priceRange = conditionMap.get("price");
 
+                // 根据-分割价格对象
                 String[] split = priceRange.split("-");
 
+                // 获取价格1 和 价格2
                 String price1 = split[0];
                 String price2 = split[1];
 
+                // 范围查询
                 boolQueryBuilder.filter(QueryBuilders.rangeQuery("price").gte(price1).lte(price2));
 
 
@@ -165,15 +169,15 @@ public class ElasticSearchSearchServiceImpl implements ElasticSearchSearchServic
 
             Terms categoryTerms = aggregations.get(categoryBrand);
             List<String> categoryList = new LinkedList<>();
-
+            // 遍历 商品类别并保存至categoryList中国
             categoryTerms.getBuckets().forEach((bucket -> {
                 categoryList.add(bucket.getKeyAsString());
             }));
 
             Terms specTerms = aggregations.get(specGroup);
 
-            Map<String, Set<String>> specMap = new HashMap<>();
 
+            Map<String, Set<String>> specMap = new HashMap<>();
             specTerms.getBuckets().forEach((bucket -> {
                 // 将规格转为map
                 Map<String, String>specJsonMap = JSON.parseObject(bucket.getKeyAsString(), Map.class);

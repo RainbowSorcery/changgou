@@ -28,7 +28,7 @@ public class SpuServiceImpl implements SpuService {
     private IdWorker idWorker;
 
     @Autowired
-    private CategpruMapper categpruMapper;
+    private CategoryMapper categoryMapper;
 
     @Autowired
     private BrandMapper brandMapper;
@@ -59,7 +59,7 @@ public class SpuServiceImpl implements SpuService {
     private void saveSku(Spu spu, List<Sku> skuList) {
         if (skuList != null && skuList.size() > 0) {
 
-            Category category = categpruMapper.selectByPrimaryKey(spu.getCategory3Id());
+            Category category = categoryMapper.selectByPrimaryKey(spu.getCategory3Id());
 
             Brand brand = brandMapper.selectByPrimaryKey(spu.getBrandId());
 

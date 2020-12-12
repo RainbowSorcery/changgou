@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-@Component
 @RabbitListener(queues = {"goods_down_queue"})
+@Component
 public class SkuDownListener {
     @Autowired
     private SkuFeign skuFeign;

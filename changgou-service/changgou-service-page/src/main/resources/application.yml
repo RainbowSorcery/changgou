@@ -4,7 +4,7 @@ spring:
   application:
     name: page-service
   rabbitmq:
-    addresses: 192.168.223.130
+    host: 192.168.223.130
   main:
     allow-bean-definition-overriding: true
 eureka:
@@ -14,21 +14,27 @@ eureka:
   instance:
     prefer-ip-address: true
 
+
 feign:
   hystrix:
     enabled: true
   client:
     config:
-      defalut:
+      default:
         connectTimeout: 600000
         readTimeout: 600000
+
 
 hystrix:
   command:
     default:
       execution:
         timeout:
-          #Èç¹ûenabledÉèÖÃÎªfalse£¬ÔòÇëÇó³¬Ê±½»¸øribbon¿ØÖÆ
+          #ï¿½ï¿½ï¿½enabledï¿½ï¿½ï¿½ï¿½Îªfalseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ribbonï¿½ï¿½ï¿½ï¿½
           enabled: true
         isolation:
           strategy: SEMAPHORE
+          thread:
+            timeoutInMilliseconds: 5000
+
+pagePath: D:\JavaProject\changgou\changgou-service\changgou-service-page\src\main\resources\templates\items
