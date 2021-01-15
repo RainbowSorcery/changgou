@@ -18,4 +18,11 @@ public interface SkuFeign {
 
     @GetMapping("/findAll")
     public Result<List<Sku>> findAllSku();
+
+
+    @GetMapping("/findBySkuId/{skuId}")
+    public Result<Sku> findSkuIdBySku();
+
+    @GetMapping("/findSkuById/{skuId}")
+    public Result<Sku> findSkuById(@PathVariable String skuId);
 }

@@ -16,7 +16,7 @@ public class Sku implements Serializable {
 	private String id;//商品id
 
 
-	
+
 	private String sn;//商品条码
 	private String name;//SKU名称
 	private Integer price;//价格（分）
@@ -36,7 +36,7 @@ public class Sku implements Serializable {
 	private Integer commentNum;//评论数
 	private String status;//商品状态 1-正常，2-下架，3-删除
 
-	
+
 	public String getId() {
 		return id;
 	}

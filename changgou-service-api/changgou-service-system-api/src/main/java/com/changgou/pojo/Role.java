@@ -16,10 +16,10 @@ public class Role implements Serializable {
 	private Integer id;//ID
 
 
-	
+
 	private String name;//角色名称
 
-	
+
 	public Integer getId() {
 		return id;
 	}

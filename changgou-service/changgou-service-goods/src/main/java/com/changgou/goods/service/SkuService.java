@@ -9,4 +9,5 @@ public interface SkuService {
 
     List<Sku> findAll();
 
+    Sku findSkuById(String skuId);
 }

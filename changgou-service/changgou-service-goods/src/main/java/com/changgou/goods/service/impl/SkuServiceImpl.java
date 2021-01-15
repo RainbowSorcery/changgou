@@ -16,6 +16,11 @@ public class SkuServiceImpl implements SkuService {
     private SkuMapper skuMapper;
 
     @Override
+    public Sku findSkuById(String skuId) {
+        return skuMapper.selectByPrimaryKey(skuId);
+    }
+
+    @Override
     public List<Sku> findBySpuId(String spuId) {
         Example example = new Example(Sku.class);
         Example.Criteria criteria = example.createCriteria();

@@ -16,7 +16,7 @@ public class Pref implements Serializable {
 	private Integer id;//ID
 
 
-	
+
 	private Integer cateId;//分类ID
 	private Integer buyMoney;//消费金额
 	private Integer preMoney;//优惠金额
@@ -25,7 +25,7 @@ public class Pref implements Serializable {
 	private String type;//类型
 	private String state;//状态
 
-	
+
 	public Integer getId() {
 		return id;
 	}

@@ -1,0 +1,45 @@
+server:
+  port: 9002
+spring:
+  application:
+    name: order-service
+
+  datasource:
+    url: jdbc:mysql://192.168.223.130:3306/changgou_order
+    username: root
+    password: 52701314
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  main:
+    allow-bean-definition-overriding: true
+  redis:
+    host: 192.168.223.130
+    port: 6379
+  rabbitmq:
+    addresses: 192.168.223.130
+    username: guest
+    password: guest
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:6868/eureka/
+  instance:
+    prefer-ip-address: true
+
+feign:
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 60000
+        readTimeout: 20000
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          strategy: SEMAPHORE
+          thread:
+            timeoutInMilliseconds: 20000

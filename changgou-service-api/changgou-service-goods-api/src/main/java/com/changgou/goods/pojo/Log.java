@@ -16,7 +16,7 @@ public class Log implements Serializable {
 	private Long id;//id
 
 
-	
+
 	private Long branchId;//branch_id
 	private String xid;//xid
 	private byte[] rollbackInfo;//rollback_info
@@ -25,7 +25,7 @@ public class Log implements Serializable {
 	private java.util.Date logModified;//log_modified
 	private String ext;//ext
 
-	
+
 	public Long getId() {
 		return id;
 	}

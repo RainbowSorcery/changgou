@@ -29,4 +29,11 @@ public class SkuController {
     public List<Sku> findBySpuId(@PathVariable String spuId) {
         return skuService.findBySpuId(spuId);
     }
+
+    @GetMapping("/findSkuById/{skuId}")
+    public Result<Sku> findSkuById(@PathVariable String skuId) {
+        Sku sku = skuService.findSkuById(skuId);
+
+        return new Result<>(true, StatusCode.OK, "根据skuId查询sku成功", sku);
+    }
 }

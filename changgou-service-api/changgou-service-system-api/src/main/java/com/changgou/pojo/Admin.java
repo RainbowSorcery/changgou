@@ -16,12 +16,12 @@ public class Admin implements Serializable {
 	private Integer id;//id
 
 
-	
+
 	private String loginName;//用户名
 	private String password;//密码
 	private String status;//状态
 
-	
+
 	public Integer getId() {
 		return id;
 	}

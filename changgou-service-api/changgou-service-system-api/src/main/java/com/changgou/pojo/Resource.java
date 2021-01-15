@@ -16,12 +16,12 @@ public class Resource implements Serializable {
 	private Integer id;//id
 
 
-	
+
 	private String resKey;//res_key
 	private String resName;//res_name
 	private Integer parentId;//parent_id
 
-	
+
 	public Integer getId() {
 		return id;
 	}

@@ -21,6 +21,7 @@
 		<module>changgou-system</module>
 		<module>changgou-service-search</module>
 		<module>changgou-service-page</module>
+		<module>changgou-service-order</module>
 	</modules>
 
 

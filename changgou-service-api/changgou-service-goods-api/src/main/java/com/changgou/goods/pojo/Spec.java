@@ -16,13 +16,13 @@ public class Spec implements Serializable {
 	private Integer id;//ID
 
 
-	
+
 	private String name;//名称
 	private String options;//规格选项
 	private Integer seq;//排序
 	private Integer templateId;//模板ID
 
-	
+
 	public Integer getId() {
 		return id;
 	}

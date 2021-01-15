@@ -37,7 +37,7 @@ public class Spu implements Serializable {
 	private String isDelete;//是否删除
 	private String status;//审核状态
 
-	
+
 	public String getId() {
 		return id;
 	}
