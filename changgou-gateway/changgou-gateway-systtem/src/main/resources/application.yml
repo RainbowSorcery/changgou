@@ -1,5 +1,5 @@
 server:
-  port: 9101
+  port: 8001
 
 eureka:
   client:
@@ -36,6 +36,13 @@ spring:
             - Path=/system/**
           filters:
             - StripPrefix= 1
+
+        - id: changgou_order_web_route
+          uri: lb://ORDER-WEB
+          predicates:
+            - Path=/api/wcart/**,/api/worder/**,/api/wxpay/**
+          filters:
+            - StripPrefix=1
   redis:
     host: 192.168.223.130
     port: 6379

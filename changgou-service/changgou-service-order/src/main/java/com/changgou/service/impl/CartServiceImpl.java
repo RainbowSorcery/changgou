@@ -81,7 +81,7 @@ public class CartServiceImpl implements CartService {
             }
         }
 
-        resultMap.put("total", total);
+        resultMap.put("totalNum", total);
         resultMap.put("totalPrice", price);
         resultMap.put("orderItemList", cardList);
 

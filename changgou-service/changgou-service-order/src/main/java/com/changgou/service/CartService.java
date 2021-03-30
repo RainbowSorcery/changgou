@@ -3,7 +3,7 @@ package com.changgou.service;
 import java.util.Map;
 
 public interface CartService {
-    public void addCard(String username, String skuId, Integer num);
+    void addCard(String username, String skuId, Integer num);
 
     Map<String, Object> cardList(String username);
 

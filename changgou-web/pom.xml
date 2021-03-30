@@ -11,5 +11,11 @@
 
     <artifactId>changgou-web</artifactId>
 
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>changgou-web-order</module>
+    </modules>
+
 
 </project>

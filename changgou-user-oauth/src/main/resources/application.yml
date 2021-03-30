@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: user-auth
+  redis:
+    host: 192.168.223.130
+    port: 6379
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 52701314
+  main:
+    allow-bean-definition-overriding: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:6868/eureka/
+
+auth:
+  ttl: 3600  #token存储到redis的过期时间
+  clientId: changgou
+  clientSecret: changgou
+  cookieDomain: .changgou.com
+  cookieMaxAge: -1
+encrypt:
+  key-store:
+    location: classpath:/changgou.jks
+    secret: changgou
+    alias: changgou
+    password: changgou

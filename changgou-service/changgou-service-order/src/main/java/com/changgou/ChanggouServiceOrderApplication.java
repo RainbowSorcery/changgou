@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = "com.changgou.goods.feign")
+@EnableFeignClients(basePackages = "com.changgou.user.feign")
 public class ChanggouServiceOrderApplication {
 
     public static void main(String[] args) {
